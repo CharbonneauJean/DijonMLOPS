@@ -12,13 +12,15 @@ import mlflow.sklearn
 import mlflow.xgboost
 from preprocess_data import preprocess_data
 
+from logs import currentTimestamp
+
 def train_xgboost(X_train, y_train, X_test, y_test):
     param_grid_xgb = {
-        'max_depth': [2,3,4,5,6,7],
-        'learning_rate': [0.05,0.06,0.07,0.08,0.09],
-        'n_estimators': [200,300,400,500],
+        'max_depth': [10,15],
+        'learning_rate': [0.05,1,10],
+        'n_estimators': [300,400],
     }
-    
+
     grid_search_xgb = GridSearchCV(estimator=XGBRegressor(objective='reg:squarederror'), 
                            param_grid=param_grid_xgb,
                            cv=5,  # 5-fold cross-validation
@@ -37,9 +39,9 @@ def train_xgboost(X_train, y_train, X_test, y_test):
 
 def train_random_forest(X_train, y_train, X_test, y_test):
     param_grid_rf = { 
-        'n_estimators': [90,100,110],
-        'max_features': [35,40,45],
-        'max_depth' : [13,14,15],
+        'n_estimators': [100,200,400],
+        'max_features': [20,40,80],
+        'max_depth' : [10,14,20],
         'criterion' :['squared_error']
     }
 
@@ -67,9 +69,9 @@ def train_random_forest(X_train, y_train, X_test, y_test):
 
 def train_svr(X_train, y_train, X_test, y_test):
     param_grid_svr = {
-        'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
-        'C': [0.010,0.011,0.012],
-        'epsilon': [2.49,2.5,2.51]
+        'kernel': ['linear'],
+        'C': [0.01, 0.1, 1, 10, 100],
+        'epsilon': [1, 2, 2.5, 5]
     }
 
     svr = SVR()
@@ -94,29 +96,3 @@ def train_svr(X_train, y_train, X_test, y_test):
 
     return best_model_svr, rmse, mae, r2, grid_search_svr.best_params_
 
-if __name__ == "__main__":
-    df = pd.read_csv('data/ds_salaries.csv')
-    X_train, X_test, y_train, y_test = preprocess_data(df)
-    
-    mlflow.set_experiment("salary_prediction")
-    
-    with mlflow.start_run(run_name="xgboost"):
-        best_model_xgb, rmse, mae, r2 = train_xgboost(X_train, y_train, X_test, y_test)
-        mlflow.log_metric("rmse", rmse)
-        mlflow.log_metric("mae", mae)
-        mlflow.log_metric("r2", r2)
-        mlflow.xgboost.log_model(best_model_xgb, "model")
-        
-    with mlflow.start_run(run_name="random_forest"):
-        best_model_rf, rmse, mae, r2 = train_random_forest(X_train, y_train, X_test, y_test) 
-        mlflow.log_metric("rmse", rmse)
-        mlflow.log_metric("mae", mae)
-        mlflow.log_metric("r2", r2)
-        mlflow.sklearn.log_model(best_model_rf, "model")
-        
-    with mlflow.start_run(run_name="svr"):
-        best_model_svr, rmse, mae, r2 = train_svr(X_train, y_train, X_test, y_test)
-        mlflow.log_metric("rmse", rmse) 
-        mlflow.log_metric("mae", mae)
-        mlflow.log_metric("r2", r2)
-        mlflow.sklearn.log_model(best_model_svr, "model")
