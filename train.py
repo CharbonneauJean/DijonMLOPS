@@ -33,7 +33,7 @@ def train_xgboost(X_train, y_train, X_test, y_test):
     mae = mean_absolute_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
-    return best_model_xgb, rmse, mae, r2
+    return best_model_xgb, rmse, mae, r2, grid_search_xgb.best_params_
 
 def train_random_forest(X_train, y_train, X_test, y_test):
     param_grid_rf = { 
@@ -63,7 +63,7 @@ def train_random_forest(X_train, y_train, X_test, y_test):
     mae = mean_absolute_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
     
-    return best_model_rf, rmse, mae, r2
+    return best_model_rf, rmse, mae, r2, grid_search_rf.best_params_
 
 def train_svr(X_train, y_train, X_test, y_test):
     param_grid_svr = {
@@ -92,7 +92,7 @@ def train_svr(X_train, y_train, X_test, y_test):
     mae = mean_absolute_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
-    return best_model_svr, rmse, mae, r2
+    return best_model_svr, rmse, mae, r2, grid_search_svr.best_params_
 
 if __name__ == "__main__":
     df = pd.read_csv('data/ds_salaries.csv')
