@@ -6,6 +6,13 @@ from train import train_xgboost, train_random_forest, train_svr
 import pandas as pd
 from logs import currentTimestamp
 
+def test_predictions(best_model, X_test, y_test):
+    predictions = best_model.predict(X_test[:10])  # Prédire sur les 10 premiers exemples de test
+    
+    print("Prédictions sur 10 exemples de test:")
+    for i in range(10):
+        print(f"Exemple {i+1}: Valeur réelle = {y_test.iloc[i]}, Prédiction = {predictions[i]}")
+
 if __name__ == "__main__":
     mlflow.set_experiment("salary_prediction")
 
@@ -32,6 +39,9 @@ if __name__ == "__main__":
         mlflow.xgboost.log_model(best_model_xgb, "xgboost-model")
         logged_model = 'runs:/{}/xgboost-model'.format(mlflow.active_run().info.run_id)
         mlflow.register_model(logged_model,"xgboost-" + currentTimestamp.strftime("%Y-%m-%d-%H-%M-%S"))
+
+        print("\nTest des prédictions pour XGBoost:")
+        test_predictions(best_model_xgb, X_test, y_test)
         
     with mlflow.start_run(run_name="random_forest"):
         best_model_rf, rmse, mae, r2, bestModelParams = train_random_forest(X_train, y_train, X_test, y_test)
@@ -42,6 +52,9 @@ if __name__ == "__main__":
         mlflow.sklearn.log_model(best_model_rf, "randomforestregressor-model")
         logged_model = 'runs:/{}/randomforestregressor-model'.format(mlflow.active_run().info.run_id)
         mlflow.register_model(logged_model,"randomforestregressor-" + currentTimestamp.strftime("%Y-%m-%d-%H-%M-%S"))
+
+        print("\nTest des prédictions pour RandomForestRegressor:")
+        test_predictions(best_model_rf, X_test, y_test)
         
     with mlflow.start_run(run_name="svr"):
         best_model_svr, rmse, mae, r2, bestModelParams = train_svr(X_train, y_train, X_test, y_test)
@@ -52,3 +65,6 @@ if __name__ == "__main__":
         mlflow.sklearn.log_model(best_model_svr, "svr-model")
         logged_model = 'runs:/{}/svr-model'.format(mlflow.active_run().info.run_id)
         mlflow.register_model(logged_model,"svr-" + currentTimestamp.strftime("%Y-%m-%d-%H-%M-%S"))
+
+        print("\nTest des prédictions pour SVR:")
+        test_predictions(best_model_svr, X_test, y_test)
